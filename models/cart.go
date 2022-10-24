@@ -11,12 +11,13 @@ type Cart struct {
 	UserId     int  `form:"userid" json:"userid" validate:"required"`
 	Quantity int     `form:"quantity" json:"quantity" validate:"required"`
 	Total    float64 `form:"total" json:"total" validate:"required"`
+	Status     string  `form:"status" json:"status" gorm:"default:process"`
 	Product Product `gorm:"foreignkey:ProductId;references:Id"`
 	User User `gorm:"foreignkey:UserId;references:Id"`
 }
 
 func ViewCart(db *gorm.DB, cart *[]Cart, id int) (err error) {
-	err = db.Where("user_id=?", id).Preload("User").Preload("Product").Find(cart).Error
+	err = db.Where(&Cart{UserId: id, Status: "process"}).Preload("User").Preload("Product").Find(cart).Error
 	if err != nil {
 		return err
 	}
@@ -24,7 +25,7 @@ func ViewCart(db *gorm.DB, cart *[]Cart, id int) (err error) {
 }
 
 func FindCart(db *gorm.DB, cart *Cart, product int, user int) (err error) {
-	err = db.Where(&Cart{ProductId: product, UserId: user}).Preload("User").Preload("Product").First(cart).Error
+	err = db.Where(&Cart{ProductId: product, UserId: user, Status: "process"}).Preload("User").Preload("Product").First(cart).Error
 	if err != nil {
 		return err
 	}

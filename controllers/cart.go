@@ -6,14 +6,12 @@ import (
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/session"
 	"gorm.io/gorm"
 )
 
 
 type CartController struct {
 	Db *gorm.DB
-	store *session.Store
 }
 
 //GET
@@ -97,10 +95,10 @@ func (controller *CartController) AddtoCart(c *fiber.Ctx) error {
 	
 }
 
-func InitCartController(s *session.Store) *CartController {
+func InitCartController() *CartController {
 	db := database.InitDb()
 
 	db.AutoMigrate(&models.Cart{})
 
-	return &CartController{Db: db, store: s}
+	return &CartController{Db: db}
 }

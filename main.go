@@ -13,7 +13,8 @@ func main() {
 
 	productAPI := controllers.InitProductController()
 	auth := controllers.InitAuthController(store)
-	cart := controllers.InitCartController(store)
+	cart := controllers.InitCartController()
+	transaction := controllers.InitTransactionController()
 
 	p := app.Group("/api")
 	p.Get("/products", productAPI.IndexProducts)
@@ -27,6 +28,10 @@ func main() {
 
 	app.Get("/cart", cart.GetCart)
 	app.Post("/cart", cart.AddtoCart)
+
+	app.Get("/transaction", transaction.GetTransaction)
+	app.Post("/transaction", transaction.AddtoTransaction)
+	app.Get("/trarnsaction", transaction.FinishTransaction)
 
 	app.Listen(":3000")
 }
