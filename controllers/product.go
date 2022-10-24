@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"rapidtech/shopping-rest-api/database"
 	"rapidtech/shopping-rest-api/models"
 	"strconv"
@@ -83,20 +84,41 @@ func (controller *ProductController) DetailProduct(c *fiber.Ctx) error {
 // @Success 200 {json} product
 // @Router /products [post]
 func (controller *ProductController) CreateProduct(c *fiber.Ctx) error {
-	// data := new(models.Product)
-	var data models.Product
+	if form, err := c.MultipartForm(); err == nil {
+		files := form.File["image"]
+		
+		for _, file := range files {
+			var data models.Product
+			fmt.Println(file.Filename, file.Size, file.Header["Content-Type"][0])
+			
+			if err := c.BodyParser(&data); err != nil {
+				return c.JSON(fiber.Map{
+					"message": "Please fill the form correctly!",
+				})
+			}
+			
+			if err := c.SaveFile(file, fmt.Sprintf("./upload/%s", file.Filename)); err != nil {
+				return err
+			}
 
-		if err := c.BodyParser(&data); err != nil {
-			return c.SendStatus(400)
+			data.Image = file.Filename
+		
+			err := models.CreateProduct(controller.Db, &data)
+		
+			if err != nil {
+				return c.JSON(data)
+			}
+
+			c.JSON(data)
 		}
+		return c.JSON(fiber.Map{
+			"message": "Product inserted successfully!",
+		})
+	}
 
-		err := models.CreateProduct(controller.Db, &data)
-
-		if err != nil {
-			return c.SendStatus(500)
-		}
-
-		return c.JSON(data)
+	return c.JSON(fiber.Map{
+		"message": "Formdata error",
+	})
 }
 
 // EDIT PRODUCT
@@ -115,28 +137,59 @@ func (controller *ProductController) CreateProduct(c *fiber.Ctx) error {
 // @Success 200 {json} product
 // @Router /products/{id} [put]
 func (controller *ProductController) EditProduct(c *fiber.Ctx) error {
-	id := c.Params("id")
-	idn,_ := strconv.Atoi(id)
+	if form, err := c.MultipartForm(); err == nil {
+		files := form.File["image"]
+		
+		for _, file := range files {
+			var data models.Product
+			
+			id := c.Params("id")
+			idn,_ := strconv.Atoi(id)
 
-	var product models.Product
-	err := models.ReadProductById(controller.Db, &product, idn)
-	if err!=nil {
-		return c.SendStatus(500) // http 500 internal server error
+
+			err := models.ReadProductById(controller.Db, &data, idn)
+			if err!=nil {
+				return c.SendStatus(500) // http 500 internal server error
+			}
+			
+			var myform models.Product
+
+			if err := c.BodyParser(&myform); err != nil {
+				return c.JSON(fiber.Map{
+					"message": "Please complete the form",
+				})
+			}
+
+			data.Name = myform.Name
+			data.Quantity = myform.Quantity
+			data.Price = myform.Price
+			// save product
+			
+
+			fmt.Println(file.Filename, file.Size, file.Header["Content-Type"][0])
+			
+			if err := c.SaveFile(file, fmt.Sprintf("./upload/%s", file.Filename)); err != nil {
+				return err
+			}
+
+			data.Image = file.Filename
+		
+			err = models.UpdateProduct(controller.Db, &data)
+		
+			if err != nil {
+				return c.JSON(data)
+			}
+
+			c.JSON(data)
+		}
+		return c.JSON(fiber.Map{
+			"message": "Product updated successfully!",
+		})
 	}
-	var updateProduct models.Product
 
-	if err := c.BodyParser(&updateProduct); err != nil {
-		return c.SendStatus(400)
-	}
-
-	product.Name = updateProduct.Name
-	product.Quantity = updateProduct.Quantity
-	product.Price = updateProduct.Price
-
-	// save product
-	models.UpdateProduct(controller.Db, &product)
-	
-	return c.JSON(product)
+	return c.JSON(fiber.Map{
+		"message": "error",
+	})
 }
 
 // DELETE PRODUCT

@@ -39,13 +39,7 @@ func (controller *CartController) AddtoCart(c *fiber.Ctx) error {
 	productId := c.Query("productid")
 
 	product_id,_ := strconv.Atoi(productId)
-	user_id, err := strconv.Atoi(userId)
-	
-	if err != nil {
-		c.JSON(fiber.Map{
-			"message": "Login first",
-		})
-	}
+	user_id,_ := strconv.Atoi(userId)
   
 	var cart models.Cart
 	var product models.Product

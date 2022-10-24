@@ -15,8 +15,8 @@ type Transaction struct {
 	User User `gorm:"foreignkey:UserId;references:Id"`
 }
 
-func ViewTransaction(db *gorm.DB, trans *[]Transaction) (err error) {
-	err = db.Preload("Cart").Preload("User").Find(trans).Error
+func ViewTransaction(db *gorm.DB, trans *[]Transaction, id int) (err error) {
+	err = db.Where("user_id = ?", id).Preload("Cart").Preload("User").Find(trans).Error
 	if err != nil {
 		return err
 	}

@@ -31,7 +31,7 @@ func main() {
 
 	app.Get("/transaction", transaction.GetTransaction)
 	app.Post("/transaction", transaction.AddtoTransaction)
-	app.Get("/trarnsaction", transaction.FinishTransaction)
+	app.Post("/finish_transaction", transaction.FinishTransaction)
 
 	app.Listen(":3000")
 }

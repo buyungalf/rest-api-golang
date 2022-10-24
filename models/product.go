@@ -7,6 +7,7 @@ type Product struct {
 	Id       uint     `form:"id" json:"id" validate:"required"`
 	Name     string  `form:"name" json:"name" validate:"required"`
 	Quantity int     `form:"quantity" json:"quantity" validate:"required"`
+	Image 	string `form:"image" json:"image" validate:"required"`
 	Price    float64 `form:"price" json:"price" validate:"required"`
 }
 

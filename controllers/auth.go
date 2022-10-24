@@ -112,8 +112,8 @@ func (controller *AuthController) Logout(c *fiber.Ctx) error {
 
 	sess.Destroy()
 
-	return c.Render("login", fiber.Map{
-		"Title": "Login",
+	return c.JSON(fiber.Map{
+		"message": "Logout success!",
 	})
 }
 

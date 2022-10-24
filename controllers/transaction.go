@@ -16,9 +16,12 @@ type TransactionController struct {
 
 //GET
 func (controller *TransactionController) GetTransaction(c *fiber.Ctx) error {
+	userId := c.Query("userid")
+
+	user_id,_ := strconv.Atoi(userId)
 	
 	var transaction []models.Transaction
-	err := models.ViewTransaction(controller.Db, &transaction)
+	err := models.ViewTransaction(controller.Db, &transaction, user_id)
 
 	if err != nil {
 		return c.SendStatus(500)
@@ -43,6 +46,7 @@ func (controller *TransactionController) AddtoTransaction(c *fiber.Ctx) error {
 
 	for i := 0; i < len(cart); i++ {
 		transaction.CartId = int(cart[i].Id)
+		transaction.Id += uint(i)
 		transaction.UserId = user_id
 		transaction.Total = cart[i].Total
 
@@ -53,10 +57,10 @@ func (controller *TransactionController) AddtoTransaction(c *fiber.Ctx) error {
 			c.JSON(err)
 		}
 		
-		err = models.AddtoTransaction(controller.Db, &transaction)
+		err2 := models.AddtoTransaction(controller.Db, &transaction)
 	
-		if err != nil {
-			c.JSON(err)
+		if err2 != nil {
+			c.JSON(err2)
 		}
 	}
 
