@@ -15,11 +15,25 @@ type Cart struct {
 	User User `gorm:"foreignkey:UserId;references:Id"`
 }
 
-func ViewCart(db *gorm.DB, cart *[]Cart) (err error) {
-	err = db.Preload("User").Preload("Product").Find(cart).Error
+func ViewCart(db *gorm.DB, cart *[]Cart, id int) (err error) {
+	err = db.Where("user_id=?", id).Preload("User").Preload("Product").Find(cart).Error
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func FindCart(db *gorm.DB, cart *Cart, product int, user int) (err error) {
+	err = db.Where(&Cart{ProductId: product, UserId: user}).Preload("User").Preload("Product").First(cart).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func UpdateCart(db *gorm.DB, cart *Cart) (err error) {
+	db.Save(cart)
+	
 	return nil
 }
 

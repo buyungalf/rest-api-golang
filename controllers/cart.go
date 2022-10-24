@@ -18,9 +18,16 @@ type CartController struct {
 
 //GET
 func (controller *CartController) GetCart(c *fiber.Ctx) error {
-	
+	userId := c.Query("userid")
+	user_id, err := strconv.Atoi(userId)
+	if err != nil {
+		c.JSON(fiber.Map{
+			"message": "Login first",
+		})
+	}
+
 	var cart []models.Cart
-	err := models.ViewCart(controller.Db, &cart)
+	err = models.ViewCart(controller.Db, &cart, user_id)
 
 	if err != nil {
 		return c.SendStatus(500)
@@ -37,30 +44,57 @@ func (controller *CartController) AddtoCart(c *fiber.Ctx) error {
 	user_id, err := strconv.Atoi(userId)
 	
 	if err != nil {
-		c.Redirect("/login")
+		c.JSON(fiber.Map{
+			"message": "Login first",
+		})
 	}
   
 	var cart models.Cart
 	var product models.Product
+	var find models.Cart
 
 	err2 := models.ReadProductById(controller.Db, &product, product_id)
 
 	if err2 != nil {
-		c.Redirect("/products")
+		c.JSON(fiber.Map{
+			"message": "Product Error",
+			"status": 500,
+		})
 	}
 
-	cart.ProductId = product_id
-	cart.UserId = user_id
-	cart.Quantity = 1
-	cart.Total = float64(cart.Quantity)*product.Price
-
-	err3 := models.AddtoCart(controller.Db, &cart)
-
-	if err3 != nil {
-		c.Redirect("/products")
+	err4 := models.FindCart(controller.Db, &find, product_id, user_id)
+	if err4 != nil {
+		c.JSON(fiber.Map{
+			"message": "Internal Server Error",
+			"status": 500,
+		})
 	}
 
-	return c.Redirect("/cart")
+	if find.Id != 0 {
+		find.Quantity = find.Quantity + 1
+		find.Total = find.Total + product.Price
+
+		models.UpdateCart(controller.Db, &find)
+
+		return c.JSON(find)		
+	} else {
+		cart.ProductId = product_id
+		cart.UserId = user_id
+		cart.Quantity = 1
+		cart.Total = float64(cart.Quantity)*product.Price
+
+		err3 := models.AddtoCart(controller.Db, &cart)
+
+		if err3 != nil {
+			c.JSON(fiber.Map{
+				"message": "Internal Server Error",
+				"status": 500,
+			})
+		}
+
+		return c.JSON(cart)
+	}
+	
 }
 
 func InitCartController(s *session.Store) *CartController {

@@ -13,6 +13,7 @@ func main() {
 
 	productAPI := controllers.InitProductController()
 	auth := controllers.InitAuthController(store)
+	cart := controllers.InitCartController(store)
 
 	p := app.Group("/api")
 	p.Get("/products", productAPI.IndexProducts)
@@ -23,6 +24,9 @@ func main() {
 
 	app.Post("/login", auth.Login)
 	app.Post("/register", auth.Register)
+
+	app.Get("/cart", cart.GetCart)
+	app.Post("/cart", cart.AddtoCart)
 
 	app.Listen(":3000")
 }
